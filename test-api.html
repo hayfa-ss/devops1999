@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet DevOps API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .endpoint {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+            border-radius: 5px;
+        }
+        .endpoint h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .url {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Timesheet DevOps API Tester</h1>
+        
+        <div class="info">
+            <strong>Base URL:</strong> http://localhost:8082/timesheet-devops<br>
+            <strong>Status:</strong> <span id="status">Checking...</span>
+        </div>
+
+        <!-- Get All Users -->
+        <div class="endpoint">
+            <h3>1. Get All Users (GET)</h3>
+            <div class="url">http://localhost:8082/timesheet-devops/user/retrieve-all-users</div>
+            <button onclick="getAllUsers()">Get All Users</button>
+            <div id="result1" class="result" style="display:none;"></div>
+        </div>
+
+        <!-- Get User by ID -->
+        <div class="endpoint">
+            <h3>2. Get User by ID (GET)</h3>
+            <div class="url">http://localhost:8082/timesheet-devops/user/retrieve-user/{id}</div>
+            <input type="number" id="userId" placeholder="Enter User ID" style="padding: 8px; margin: 5px; width: 150px;">
+            <button onclick="getUserById()">Get User</button>
+            <div id="result2" class="result" style="display:none;"></div>
+        </div>
+
+        <!-- Add User -->
+        <div class="endpoint">
+            <h3>3. Add User (POST)</h3>
+            <div class="url">http://localhost:8082/timesheet-devops/user/add-user</div>
+            <div style="margin: 10px 0;">
+                <input type="text" id="firstName" placeholder="First Name" style="padding: 8px; margin: 5px; width: 150px;">
+                <input type="text" id="lastName" placeholder="Last Name" style="padding: 8px; margin: 5px; width: 150px;"><br>
+                <input type="date" id="dateNaissance" placeholder="Birth Date" style="padding: 8px; margin: 5px; width: 150px;">
+                <select id="role" style="padding: 8px; margin: 5px; width: 150px;">
+                    <option value="CHEF_DEPARTEMENT">CHEF_DEPARTEMENT</option>
+                    <option value="ADMINISTRATEUR">ADMINISTRATEUR</option>
+                    <option value="INGENIEUR">INGENIEUR</option>
+                    <option value="TECHNICIEN">TECHNICIEN</option>
+                </select><br>
+                <button onclick="addUser()">Add User</button>
+            </div>
+            <div id="result3" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8082/timesheet-devops';
+        
+        // Check status on load
+        window.onload = function() {
+            checkStatus();
+        };
+
+        function checkStatus() {
+            fetch(`${baseUrl}/user/retrieve-all-users`)
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('status').innerHTML = '<span class="success">✅ Application is running!</span>';
+                    } else {
+                        document.getElementById('status').innerHTML = '<span class="error">❌ Application error</span>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('status').innerHTML = '<span class="error">❌ Cannot connect to application</span>';
+                });
+        }
+
+        function getAllUsers() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Loading...';
+            
+            fetch(`${baseUrl}/user/retrieve-all-users`)
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                });
+        }
+
+        function getUserById() {
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                alert('Please enter a User ID');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result2');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Loading...';
+            
+            fetch(`${baseUrl}/user/retrieve-user/${userId}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('User not found');
+                    }
+                })
+                .then(data => {
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                });
+        }
+
+        function addUser() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const dateNaissance = document.getElementById('dateNaissance').value;
+            const role = document.getElementById('role').value;
+            
+            if (!firstName || !lastName || !dateNaissance) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result3');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Loading...';
+            
+            const userData = {
+                firstName: firstName,
+                lastName: lastName,
+                dateNaissance: dateNaissance,
+                role: role
+            };
+            
+            fetch(`${baseUrl}/user/add-user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.innerHTML = `<span class="success">✅ User added successfully!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    // Clear form
+                    document.getElementById('firstName').value = '';
+                    document.getElementById('lastName').value = '';
+                    document.getElementById('dateNaissance').value = '';
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                });
+        }
+    </script>
+</body>
+</html>
+
