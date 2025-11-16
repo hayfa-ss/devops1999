@@ -74,35 +74,35 @@ pipeline {
             }
         }
 
-       stage('Trivy Security Scan') {
-    steps {
-        dir("${WORKDIR}") {
-            echo "Running Trivy security scan..."
-            script {
-                if (isUnix()) {
-                    sh '''
-                        trivy fs --format json --output $TRIVY_REPORT .
-                        jq -r '.Results[].Vulnerabilities[]? 
-                            | select((.CVSS?.nvd?.V3Score // 0) >= 8)
-                            | "Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)"' \
-                            $TRIVY_REPORT > $TRIVY_SUMMARY || true
-                        if [ ! -s $TRIVY_SUMMARY ]; then
-                            echo "No vulnerabilities with CVSS >= 8 found." > $TRIVY_SUMMARY
-                        fi
-                    '''
-                } else {
-                    bat """
-                        trivy fs --format json --output %TRIVY_REPORT% .
-                        jq -r ".Results[].Vulnerabilities[]? 
-                            | select((.CVSS?.nvd?.V3Score // 0) >= 8) 
-                            | \\"Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)\\"" \
-                            %TRIVY_REPORT% > %TRIVY_SUMMARY% || echo No vulnerabilities found > %TRIVY_SUMMARY%
-                    """
+        stage('Trivy Security Scan') {
+            steps {
+                dir("${WORKDIR}") {
+                    echo "Running Trivy security scan..."
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                trivy fs --format json --output $TRIVY_REPORT .
+                                jq -r '.Results[].Vulnerabilities[]? 
+                                    | select((.CVSS?.nvd?.V3Score // 0) >= 8)
+                                    | "Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)"' \
+                                    $TRIVY_REPORT > $TRIVY_SUMMARY || true
+                                if [ ! -s $TRIVY_SUMMARY ]; then
+                                    echo "No vulnerabilities with CVSS >= 8 found." > $TRIVY_SUMMARY
+                                fi
+                            '''
+                        } else {
+                            bat """
+                                trivy fs --format json --output %TRIVY_REPORT% .
+                                jq -r ".Results[].Vulnerabilities[]? | select((.CVSS?.nvd?.V3Score // 0) >= 8) | \\"Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)\\"" %TRIVY_REPORT% > %TRIVY_SUMMARY% 2>nul
+                                if not exist %TRIVY_SUMMARY% (
+                                    echo No vulnerabilities with CVSS >= 8 found. > %TRIVY_SUMMARY%
+                                )
+                            """
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
         stage('Gitleaks Scan') {
             steps {
@@ -121,15 +121,17 @@ pipeline {
                             """
                         } else {
                             bat """
-                                gitleaks detect --source . --report-format json --report-path ${GITLEAKS_REPORT} || echo No secrets found
-                                jq -r ".Leaks[]? | \\"File: \(.FilePath) | Secret: \(.Title) | Description: \(.Description)\\"" ${GITLEAKS_REPORT} > ${GITLEAKS_SUMMARY} || echo No secrets found > ${GITLEAKS_SUMMARY}
+                                gitleaks detect --source . --report-format json --report-path %GITLEAKS_REPORT% || exit 0
+                                jq -r ".Leaks[]? | \\"File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)\\"" %GITLEAKS_REPORT% > %GITLEAKS_SUMMARY% 2>nul
+                                if not exist %GITLEAKS_SUMMARY% (
+                                    echo No secrets found by Gitleaks. > %GITLEAKS_SUMMARY%
+                                )
                             """
                         }
                     }
                 }
             }
         }
-
     }
 
     post {
@@ -166,7 +168,7 @@ pipeline {
                     if (isUnix()) {
                         sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
                     } else {
-                        bat "del /F ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
+                        bat "del /F ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY} 2>nul || exit 0"
                     }
                 }
             }
