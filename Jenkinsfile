@@ -81,19 +81,23 @@ pipeline {
                     script {
                         if (isUnix()) {
                             sh """
-                                trivy fs --format json --output ${TRIVY_REPORT} .
-                                jq -r '.Results[].Vulnerabilities[]? 
-                                    | select((.CVSS?.nvd?.V3Score // 0) >= 8)
-                                    | "Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)"' \\
-                                    ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || true
+                                trivy fs --format json --output ${TRIVY_REPORT} . || true
+                                if [ -f ${TRIVY_REPORT} ]; then
+                                    jq -r '.Results[].Vulnerabilities[]? 
+                                        | select((.CVSS?.nvd?.V3Score // 0) >= 8)
+                                        | "Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)"' \\
+                                        ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || true
+                                fi
                                 if [ ! -s ${TRIVY_SUMMARY} ]; then
                                     echo "No vulnerabilities with CVSS >= 8 found." > ${TRIVY_SUMMARY}
                                 fi
                             """
                         } else {
                             bat """
-                                trivy fs --format json --output %TRIVY_REPORT% .
-                                jq -r ".Results[].Vulnerabilities[]? | select((.CVSS?.nvd?.V3Score // 0) >= 8) | \\"Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)\\"" %TRIVY_REPORT% > %TRIVY_SUMMARY% 2>nul
+                                trivy fs --format json --output %TRIVY_REPORT% . || exit /b 0
+                                if exist %TRIVY_REPORT% (
+                                    jq -r ".Results[].Vulnerabilities[]? | select((.CVSS?.nvd?.V3Score // 0) >= 8) | \\"Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)\\"" %TRIVY_REPORT% > %TRIVY_SUMMARY% 2>nul
+                                )
                                 if not exist %TRIVY_SUMMARY% (
                                     echo No vulnerabilities with CVSS >= 8 found. > %TRIVY_SUMMARY%
                                 )
@@ -112,9 +116,11 @@ pipeline {
                         if (isUnix()) {
                             sh """
                                 gitleaks detect --source . --report-format json --report-path ${GITLEAKS_REPORT} || true
-                                jq -r '.Leaks[]? 
-                                    | "File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)"' \\
-                                    ${GITLEAKS_REPORT} > ${GITLEAKS_SUMMARY} || true
+                                if [ -f ${GITLEAKS_REPORT} ]; then
+                                    jq -r '.Leaks[]? 
+                                        | "File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)"' \\
+                                        ${GITLEAKS_REPORT} > ${GITLEAKS_SUMMARY} || true
+                                fi
                                 if [ ! -s ${GITLEAKS_SUMMARY} ]; then
                                     echo "No secrets found by Gitleaks." > ${GITLEAKS_SUMMARY}
                                 fi
