@@ -74,35 +74,35 @@ pipeline {
             }
         }
 
-        stage('Trivy Security Scan') {
-            steps {
-                dir("${WORKDIR}") {
-                    echo "Running Trivy security scan..."
-                    script {
-                        if (isUnix()) {
-                            sh """
-                                trivy fs --format json --output ${TRIVY_REPORT} .
-                                jq -r '.Results[].Vulnerabilities[]? 
-                                    | select((.CVSS?.nvd?.V3Score // 0) >= 8)
-                                    | "Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)"' \
-                                    ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || true
-                                if [ ! -s ${TRIVY_SUMMARY} ]; then
-                                    echo "No vulnerabilities with CVSS >= 8 found." > ${TRIVY_SUMMARY}
-                                fi
-                            """
-                        } else {
-                            bat """
-                                trivy fs --format json --output ${TRIVY_REPORT} .
-                                jq -r ".Results[].Vulnerabilities[]? 
-                                    | select((.CVSS?.nvd?.V3Score // 0) >= 8) 
-                                    | \\"Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)\\"" \
-                                    ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || echo No vulnerabilities found > ${TRIVY_SUMMARY}
-                            """
-                        }
-                    }
+       stage('Trivy Security Scan') {
+    steps {
+        dir("${WORKDIR}") {
+            echo "Running Trivy security scan..."
+            script {
+                if (isUnix()) {
+                    sh '''
+                        trivy fs --format json --output $TRIVY_REPORT .
+                        jq -r '.Results[].Vulnerabilities[]? 
+                            | select((.CVSS?.nvd?.V3Score // 0) >= 8)
+                            | "Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)"' \
+                            $TRIVY_REPORT > $TRIVY_SUMMARY || true
+                        if [ ! -s $TRIVY_SUMMARY ]; then
+                            echo "No vulnerabilities with CVSS >= 8 found." > $TRIVY_SUMMARY
+                        fi
+                    '''
+                } else {
+                    bat """
+                        trivy fs --format json --output %TRIVY_REPORT% .
+                        jq -r ".Results[].Vulnerabilities[]? 
+                            | select((.CVSS?.nvd?.V3Score // 0) >= 8) 
+                            | \\"Package: \(.PkgName) | CVE: \(.VulnerabilityID) | CVSS: \(.CVSS.nvd.V3Score) | Severity: \(.Severity) | Title: \(.Title)\\"" \
+                            %TRIVY_REPORT% > %TRIVY_SUMMARY% || echo No vulnerabilities found > %TRIVY_SUMMARY%
+                    """
                 }
             }
         }
+    }
+}
 
         stage('Gitleaks Scan') {
             steps {
