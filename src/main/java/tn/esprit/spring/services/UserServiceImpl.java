@@ -22,6 +22,7 @@ public class UserServiceImpl implements IUserService {
 
 	@Override
 	public List<User> retrieveAllUsers() { 
+<<<<<<< HEAD
 		List<User> users = null;
 		try {
 			users = (List<User>) userRepository.findAll();
@@ -29,6 +30,10 @@ public class UserServiceImpl implements IUserService {
 			l.error("error in retrieveAllUsers() : " + e);
 		}
 		return users;
+=======
+
+		return null;
+>>>>>>> origin/main
 	}
 
 
@@ -53,6 +58,10 @@ public class UserServiceImpl implements IUserService {
 	public User updateUser(User u) {
 
 		User userUpdated = null; 
+<<<<<<< HEAD
+=======
+		User u_saved = null; 
+>>>>>>> origin/main
 
 		
 		try {
