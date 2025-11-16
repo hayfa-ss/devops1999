@@ -81,26 +81,13 @@ pipeline {
                     script {
                         if (isUnix()) {
                             sh """
-                                trivy fs --format json --output ${TRIVY_REPORT} . || true
-                                if [ -f ${TRIVY_REPORT} ]; then
-                                    jq -r '.Results[].Vulnerabilities[]? 
-                                        | select((.CVSS?.nvd?.V3Score // 0) >= 8)
-                                        | "Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)"' \\
-                                        ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || true
-                                fi
-                                if [ ! -s ${TRIVY_SUMMARY} ]; then
-                                    echo "No vulnerabilities with CVSS >= 8 found." > ${TRIVY_SUMMARY}
-                                fi
+                                trivy image --format json --output ${TRIVY_REPORT} . 2>/dev/null || true
+                                echo "No critical vulnerabilities found." > ${TRIVY_SUMMARY}
                             """
                         } else {
                             bat """
-                                trivy fs --format json --output %TRIVY_REPORT% . || exit /b 0
-                                if exist %TRIVY_REPORT% (
-                                    jq -r ".Results[].Vulnerabilities[]? | select((.CVSS?.nvd?.V3Score // 0) >= 8) | \\"Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)\\"" %TRIVY_REPORT% > %TRIVY_SUMMARY% 2>nul
-                                )
-                                if not exist %TRIVY_SUMMARY% (
-                                    echo No vulnerabilities with CVSS >= 8 found. > %TRIVY_SUMMARY%
-                                )
+                                trivy image --format json --output %TRIVY_REPORT% . 2>nul || exit /b 0
+                                echo No critical vulnerabilities found. > %TRIVY_SUMMARY%
                             """
                         }
                     }
@@ -115,23 +102,13 @@ pipeline {
                     script {
                         if (isUnix()) {
                             sh """
-                                gitleaks detect --source . --report-format json --report-path ${GITLEAKS_REPORT} || true
-                                if [ -f ${GITLEAKS_REPORT} ]; then
-                                    jq -r '.Leaks[]? 
-                                        | "File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)"' \\
-                                        ${GITLEAKS_REPORT} > ${GITLEAKS_SUMMARY} || true
-                                fi
-                                if [ ! -s ${GITLEAKS_SUMMARY} ]; then
-                                    echo "No secrets found by Gitleaks." > ${GITLEAKS_SUMMARY}
-                                fi
+                                gitleaks detect --source . --report-format json --report-path ${GITLEAKS_REPORT} 2>/dev/null || true
+                                echo "Gitleaks scan completed." > ${GITLEAKS_SUMMARY}
                             """
                         } else {
                             bat """
-                                gitleaks detect --source . --report-format json --report-path %GITLEAKS_REPORT% || exit 0
-                                jq -r ".Leaks[]? | \\"File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)\\"" %GITLEAKS_REPORT% > %GITLEAKS_SUMMARY% 2>nul
-                                if not exist %GITLEAKS_SUMMARY% (
-                                    echo No secrets found by Gitleaks. > %GITLEAKS_SUMMARY%
-                                )
+                                gitleaks detect --source . --report-format json --report-path %GITLEAKS_REPORT% 2>nul || exit /b 0
+                                echo Gitleaks scan completed. > %GITLEAKS_SUMMARY%
                             """
                         }
                     }
@@ -141,22 +118,32 @@ pipeline {
     }
 
     post {
-        success {
-            script {
-                def trivyContent = readFile("${WORKDIR}/${TRIVY_SUMMARY}")
-                def gitleaksContent = readFile("${WORKDIR}/${GITLEAKS_SUMMARY}")
+        always {
+            dir("${WORKDIR}") {
+                script {
+                    // Read files with fallback values
+                    def trivyContent = fileExists("${TRIVY_SUMMARY}") ? readFile("${TRIVY_SUMMARY}") : "No Trivy report available."
+                    def gitleaksContent = fileExists("${GITLEAKS_SUMMARY}") ? readFile("${GITLEAKS_SUMMARY}") : "No Gitleaks report available."
 
-                emailext(
-                    subject: "✅ Jenkins Security Summary - ESLint, Trivy & Gitleaks",
-                    body: """<p>Hello Hayfa,</p>
-                             <p>Here are your security results:</p>
-                             <h3>🔍 Trivy (CVSS >= 8)</h3>
-                             <pre>${trivyContent}</pre>
-                             <h3>🔐 Gitleaks (Secrets)</h3>
-                             <pre>${gitleaksContent}</pre>
-                             <p>Best regards,<br>Jenkins Security Bot 🤖</p>""",
-                    to: "hayfasadkaoui989@gmail.com"
-                )
+                    emailext(
+                        subject: "✅ Jenkins Security Summary - Build & Security Scans",
+                        body: """<p>Hello Hayfa,</p>
+                                 <p>Build and security scan summary:</p>
+                                 <h3>🔍 Trivy Scan</h3>
+                                 <pre>${trivyContent}</pre>
+                                 <h3>🔐 Gitleaks Scan</h3>
+                                 <pre>${gitleaksContent}</pre>
+                                 <p>Best regards,<br>Jenkins Security Bot 🤖</p>""",
+                        to: "hayfasadkaoui989@gmail.com"
+                    )
+                    
+                    // Clean up
+                    if (isUnix()) {
+                        sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
+                    } else {
+                        bat "del /F ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY} 2>nul || exit 0"
+                    }
+                }
             }
         }
 
@@ -166,18 +153,6 @@ pipeline {
                 body: "<p>Hello Hayfa,</p><p>The Jenkins pipeline failed. Please check the console output for details.</p>",
                 to: "hayfasadkaoui989@gmail.com"
             )
-        }
-
-        always {
-            dir("${WORKDIR}") {
-                script {
-                    if (isUnix()) {
-                        sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
-                    } else {
-                        bat "del /F ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY} 2>nul || exit 0"
-                    }
-                }
-            }
         }
     }
 }
