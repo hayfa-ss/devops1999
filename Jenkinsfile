@@ -80,16 +80,16 @@ pipeline {
                     echo "Running Trivy security scan..."
                     script {
                         if (isUnix()) {
-                            sh '''
-                                trivy fs --format json --output $TRIVY_REPORT .
+                            sh """
+                                trivy fs --format json --output ${TRIVY_REPORT} .
                                 jq -r '.Results[].Vulnerabilities[]? 
                                     | select((.CVSS?.nvd?.V3Score // 0) >= 8)
                                     | "Package: \\(.PkgName) | CVE: \\(.VulnerabilityID) | CVSS: \\(.CVSS.nvd.V3Score) | Severity: \\(.Severity) | Title: \\(.Title)"' \\
-                                    $TRIVY_REPORT > $TRIVY_SUMMARY || true
-                                if [ ! -s $TRIVY_SUMMARY ]; then
-                                    echo "No vulnerabilities with CVSS >= 8 found." > $TRIVY_SUMMARY
+                                    ${TRIVY_REPORT} > ${TRIVY_SUMMARY} || true
+                                if [ ! -s ${TRIVY_SUMMARY} ]; then
+                                    echo "No vulnerabilities with CVSS >= 8 found." > ${TRIVY_SUMMARY}
                                 fi
-                            '''
+                            """
                         } else {
                             bat """
                                 trivy fs --format json --output %TRIVY_REPORT% .
@@ -113,7 +113,7 @@ pipeline {
                             sh """
                                 gitleaks detect --source . --report-format json --report-path ${GITLEAKS_REPORT} || true
                                 jq -r '.Leaks[]? 
-                                    | "File: \(.FilePath) | Secret: \(.Title) | Description: \(.Description)"' \
+                                    | "File: \\(.FilePath) | Secret: \\(.Title) | Description: \\(.Description)"' \\
                                     ${GITLEAKS_REPORT} > ${GITLEAKS_SUMMARY} || true
                                 if [ ! -s ${GITLEAKS_SUMMARY} ]; then
                                     echo "No secrets found by Gitleaks." > ${GITLEAKS_SUMMARY}
