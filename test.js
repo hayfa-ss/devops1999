@@ -1,4 +1,4 @@
 // test-warning.js
 
-var username = "Hayfa"  // `var` will trigger no-var warning, missing semicolon triggers semi warning
-console.log("Hello " + username)
+const username = "Hayfa"; // Use const, add semicolon for proper style
+console.log("Hello " + username);
