@@ -86,7 +86,7 @@ pipeline {
                             sh """
                                 trivy image --format json --output ${TRIVY_REPORT} . 2>/dev/null || true
                                 echo "No critical vulnerabilities found." > ${TRIVY_SUMMARY}
-                            """t
+                            """
                         } else {
                             bat """
                                 trivy image --format json --output %TRIVY_REPORT% . 2>nul || exit /b 0
@@ -189,11 +189,11 @@ pipeline {
 
     post {
         always {
-            dir("${WORKDIR}") {
-                script {
-                    // Read security scan reports
-                    def trivyContent = fileExists("${TRIVY_SUMMARY}") ? readFile("${TRIVY_SUMMARY}") : "No Trivy report available."
-                    def gitleaksContent = fileExists("${GITLEAKS_SUMMARY}") ? readFile("${GITLEAKS_SUMMARY}") : "No Gitleaks report available."
+            script {
+                dir("${WORKDIR}") {
+                    // Read security scan reports with safe null handling
+                    def trivyContent = (fileExists("${TRIVY_SUMMARY}") ? readFile("${TRIVY_SUMMARY}").trim() : "No Trivy report available.") ?: "No Trivy report available."
+                    def gitleaksContent = (fileExists("${GITLEAKS_SUMMARY}") ? readFile("${GITLEAKS_SUMMARY}").trim() : "No Gitleaks report available.") ?: "No Gitleaks report available."
                     def dockerContent = fileExists("${DOCKER_REPORT}") ? "Docker image scan completed." : "No Docker scan report available."
 
                     emailext(
@@ -223,7 +223,7 @@ pipeline {
                     
                     // Clean up temporary files
                     if (isUnix()) {
-                        sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
+                        sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY} 2>/dev/null || true"
                     } else {
                         bat "del /F ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY} 2>nul || exit 0"
                     }
