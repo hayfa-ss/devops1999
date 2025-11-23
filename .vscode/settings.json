@@ -1,44 +1,8 @@
 {
-    "// ============ Java Configuration ============": {},
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
-
-    "// ============ SonarLint (SonarQube for IDE) ============": {},
-    "sonarlint.verbose": true,
     "sonarlint.connectedMode.project": {
         "connectionId": "http-localhost-9000",
         "projectKey": "timesheet-devops"
-    },
-
-    "// ============ ESLint (JavaScript Linting & Security) ============": {},
-    "eslint.enable": true,
-    "eslint.debug": false,
-    "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact"
-    ],
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
-    },
-
-    "// ============ Semgrep (Advanced Cross-Language SAST) ============": {},
-    "semgrep.enabled": true,
-    "[python]": {
-        "linting.enabled": true,
-        "linting.banditEnabled": true
-    },
-
-    "// ============ File Exclusions ============": {},
-    "files.exclude": {
-        "**/node_modules": true,
-        "**/target": true,
-        "**/.sonarlint": true
-    },
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/target": true,
-        "**/.git": true
     }
 }

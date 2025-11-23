@@ -1,9 +1,6 @@
 package tn.esprit.spring.control;
 
-<<<<<<< HEAD
-=======
 import java.util.Date;
->>>>>>> origin/main
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +12,7 @@ import tn.esprit.spring.services.IUserService;
 // userRestControl
 @RestController // = @Controller + @ResponseBody 
 @RequestMapping("/user")
-<<<<<<< HEAD
 @CrossOrigin(origins = "*") // Allow CORS from any origin
-=======
->>>>>>> origin/main
 public class UserRestControl {
 
 	@Autowired 
