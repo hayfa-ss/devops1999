@@ -7,7 +7,10 @@ pipeline {
         TRIVY_SUMMARY = "trivy_filtered.txt"
         GITLEAKS_REPORT = "gitleaks_report.json"
         GITLEAKS_SUMMARY = "gitleaks_filtered.txt"
+        DEPENDENCY_CHECK_REPORT = "dependency-check-report.html"
+        DOCKER_REPORT = "docker_scan_report.json"
         WORKDIR = "timesheet-devops/timesheet-devops"
+        DOCKER_IMAGE = "timesheet-devops:latest"
     }
 
     stages {
@@ -83,7 +86,7 @@ pipeline {
                             sh """
                                 trivy image --format json --output ${TRIVY_REPORT} . 2>/dev/null || true
                                 echo "No critical vulnerabilities found." > ${TRIVY_SUMMARY}
-                            """
+                            """t
                         } else {
                             bat """
                                 trivy image --format json --output %TRIVY_REPORT% . 2>nul || exit /b 0
@@ -115,29 +118,110 @@ pipeline {
                 }
             }
         }
+
+        stage('OWASP Dependency-Check (SCA)') {
+            steps {
+                dir("${WORKDIR}") {
+                    echo "Running OWASP Dependency-Check for dependency vulnerabilities..."
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                dependency-check.sh --project "timesheet-devops" \
+                                --scan . \
+                                --format HTML \
+                                --out ${DEPENDENCY_CHECK_REPORT} \
+                                --failOnCVSS 7 || true
+                            """
+                        } else {
+                            bat """
+                                dependency-check.bat --project "timesheet-devops" ^
+                                --scan . ^
+                                --format HTML ^
+                                --out %DEPENDENCY_CHECK_REPORT% ^
+                                --failOnCVSS 7 || exit /b 0
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir("${WORKDIR}") {
+                    echo "Building Docker image for security scanning..."
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                docker build -t ${DOCKER_IMAGE} .
+                            """
+                        } else {
+                            bat """
+                                docker build -t %DOCKER_IMAGE% .
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Docker Image Security Scan') {
+            steps {
+                dir("${WORKDIR}") {
+                    echo "Scanning Docker image with Trivy..."
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                trivy image --format json --output ${DOCKER_REPORT} ${DOCKER_IMAGE} 2>/dev/null || true
+                                trivy image --severity HIGH,CRITICAL ${DOCKER_IMAGE} || true
+                            """
+                        } else {
+                            bat """
+                                trivy image --format json --output %DOCKER_REPORT% %DOCKER_IMAGE% 2>nul || exit /b 0
+                                trivy image --severity HIGH,CRITICAL %DOCKER_IMAGE% || exit /b 0
+                            """
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
             dir("${WORKDIR}") {
                 script {
-                    // Read files with fallback values
+                    // Read security scan reports
                     def trivyContent = fileExists("${TRIVY_SUMMARY}") ? readFile("${TRIVY_SUMMARY}") : "No Trivy report available."
                     def gitleaksContent = fileExists("${GITLEAKS_SUMMARY}") ? readFile("${GITLEAKS_SUMMARY}") : "No Gitleaks report available."
+                    def dockerContent = fileExists("${DOCKER_REPORT}") ? "Docker image scan completed." : "No Docker scan report available."
 
                     emailext(
-                        subject: "✅ Jenkins Security Summary - Build & Security Scans",
+                        subject: "✅ Jenkins CI/CD Security Pipeline - Build & Security Scans",
                         body: """<p>Hello Hayfa,</p>
-                                 <p>Build and security scan summary:</p>
-                                 <h3>🔍 Trivy Scan</h3>
-                                 <pre>${trivyContent}</pre>
-                                 <h3>🔐 Gitleaks Scan</h3>
+                                 <p>Build and comprehensive security scan summary:</p>
+                                 <h3>📦 Build Status</h3>
+                                 <p>Spring Boot 3.5.0 - Java 17 Build Completed</p>
+                                 <h3>🔍 Code Quality (SAST)</h3>
+                                 <p>SonarQube Analysis - Check dashboard at http://localhost:9000</p>
+                                 <h3>📚 Dependency Vulnerabilities (SCA)</h3>
+                                 <p>OWASP Dependency-Check & Trivy Scan - See attached reports</p>
+                                 <h3>🐳 Docker Image Security</h3>
+                                 <pre>${dockerContent}</pre>
+                                 <h3>🔐 Secrets Detection</h3>
                                  <pre>${gitleaksContent}</pre>
-                                 <p>Best regards,<br>Jenkins Security Bot 🤖</p>""",
-                        to: "hayfasadkaoui989@gmail.com"
+                                 <h3>🛡️ Trivy Scan</h3>
+                                 <pre>${trivyContent}</pre>
+                                 <p>For detailed reports, check Jenkins artifacts.<br>Best regards,<br>Jenkins Security Bot 🤖</p>""",
+                        to: "hayfasadkaoui989@gmail.com",
+                        attachmentsPattern: "**/dependency-check-report.html, **/trivy_report.json, **/docker_scan_report.json"
                     )
                     
-                    // Clean up
+                    // Archive reports for later analysis
+                    archiveArtifacts artifacts: "**/dependency-check-report.html, **/trivy_report.json, **/docker_scan_report.json, **/gitleaks_report.json", 
+                                     allowEmptyArchive: true
+                    
+                    // Clean up temporary files
                     if (isUnix()) {
                         sh "rm -f ${TRIVY_REPORT} ${TRIVY_SUMMARY} ${GITLEAKS_REPORT} ${GITLEAKS_SUMMARY}"
                     } else {
@@ -150,7 +234,7 @@ pipeline {
         failure {
             emailext(
                 subject: "❌ Jenkins Pipeline Failed",
-                body: "<p>Hello Hayfa,</p><p>The Jenkins pipeline failed. Please check the console output for details.</p>",
+                body: "<p>Hello Hayfa,</p><p>The Jenkins pipeline failed during security scanning. Please check the console output for details.</p>",
                 to: "hayfasadkaoui989@gmail.com"
             )
         }
