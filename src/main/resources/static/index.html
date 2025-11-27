@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet DevOps Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .section ul {
+            list-style: none;
+        }
+        .section li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+        }
+        .section li:last-child {
+            border-bottom: none;
+        }
+        .api-endpoint {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            color: #d63031;
+            font-weight: bold;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+        .features {
+            grid-column: 1 / -1;
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #00b894;
+        }
+        .features h2 {
+            color: #00b894;
+            margin-bottom: 15px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .feature-box {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 2px solid #00b894;
+        }
+        .feature-box h3 {
+            color: #00b894;
+            margin-bottom: 10px;
+        }
+        .feature-box p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 0.9em;
+        }
+        .status-badge {
+            display: inline-block;
+            background: #00b894;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Timesheet DevOps <span class="status-badge">ONLINE</span></h1>
+            <p>Secure Employee Timesheet Management System with DevSecOps Pipeline</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>📋 API Endpoints</h2>
+                <ul>
+                    <li>
+                        <strong>Get All Users</strong>
+                        <div class="api-endpoint">GET /timesheet-devops/user/retrieve-all-users</div>
+                    </li>
+                    <li>
+                        <strong>Add User</strong>
+                        <div class="api-endpoint">POST /timesheet-devops/user/add-user</div>
+                    </li>
+                    <li>
+                        <strong>Get User by ID</strong>
+                        <div class="api-endpoint">GET /timesheet-devops/user/retrieve-user/{user-id}</div>
+                    </li>
+                    <li>
+                        <strong>Update User</strong>
+                        <div class="api-endpoint">PUT /timesheet-devops/user/update-user</div>
+                    </li>
+                    <li>
+                        <strong>Delete User</strong>
+                        <div class="api-endpoint">DELETE /timesheet-devops/user/delete-user/{user-id}</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>🛠️ Tools & Services</h2>
+                <ul>
+                    <li>
+                        <strong>H2 Database Console</strong>
+                        <div class="api-endpoint">/timesheet-devops/h2-console</div>
+                    </li>
+                    <li>
+                        <strong>SonarQube Analysis</strong>
+                        <div class="api-endpoint">http://localhost:9000</div>
+                    </li>
+                    <li>
+                        <strong>Jenkins Dashboard</strong>
+                        <div class="api-endpoint">http://localhost:8083</div>
+                    </li>
+                    <li>
+                        <strong>Nexus Repository</strong>
+                        <div class="api-endpoint">http://localhost:8081</div>
+                    </li>
+                    <li>
+                        <strong>Application Port</strong>
+                        <div class="api-endpoint">8082</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="features">
+                <h2>🔒 Security Features</h2>
+                <div class="features-grid">
+                    <div class="feature-box">
+                        <h3>🔐 Pre-commit Hooks</h3>
+                        <p>Blocks SQL injection, XSS, and hardcoded secrets before commits</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🧪 SAST Analysis</h3>
+                        <p>SonarQube static code analysis for code quality</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>📦 Dependency Scanning</h3>
+                        <p>Trivy scans for vulnerabilities in dependencies</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🔍 Secrets Detection</h3>
+                        <p>Gitleaks detects exposed secrets in code</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🎯 Dynamic Testing</h3>
+                        <p>OWASP ZAP performs dynamic security testing</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>📧 CI/CD Notifications</h3>
+                        <p>Automated email reports on security scans</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Timesheet DevOps v1.0 | Secure • Scalable • Observable</p>
+            <p>Last Updated: November 28, 2025 | Java 17 | Spring Boot 2.7.14</p>
+        </div>
+    </div>
+</body>
+</html>
