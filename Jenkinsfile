@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = "sqa_78ae98a3e2e0904d4f081cde0d1a9b5da461a4c4"
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
         DOCKER_IMAGE = "timesheet-devops:${BUILD_NUMBER}"
         DOCKER_REGISTRY = "localhost:5000"
         TRIVY_REPORT = "trivy_report.json"
