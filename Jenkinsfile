@@ -20,6 +20,14 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
+    triggers {
+        // GitHub webhook trigger - automatically triggered on push/PR
+        githubPush()
+        
+        // Poll SCM every 5 minutes as fallback
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
 
         stage('Checkout Git Project') {
