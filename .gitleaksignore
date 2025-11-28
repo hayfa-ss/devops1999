@@ -1,0 +1,15 @@
+# Gitleaks ignore file
+# Ignore false positives from patterns that look like secrets but aren't
+
+# Maven wrapper authentication (environment variables, not secrets)
+.mvn/wrapper/MavenWrapperDownloader.java
+
+# Comments and documentation
+*.md
+*.txt
+
+# Application property files with placeholders (not actual secrets)
+src/main/resources/application*.properties
+
+# Sonar properties (commented out, not active)
+sonar-project.properties
