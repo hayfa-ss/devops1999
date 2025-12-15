@@ -1,1 +1,0 @@
-public class Test { private String password = "admin123"; }
