@@ -419,11 +419,11 @@ pipeline {
                                         <p>Duration: \${((System.currentTimeMillis() - ${BUILD_START_TIME}) / 1000).toInteger()} seconds</p>
                                         <p>---</p>
                                         <p>This is an automated security report from Jenkins DevSecOps Pipeline 🤖</p>
-                                        <p>For security concerns, contact: <strong>hayfasadkaoui989@gmail.com</strong></p>
+                                        <p>For security concerns, contact: <strong>faresbenlakdher@gmail.com</strong></p>
                                     </div>
                                 </body>
                             </html>""",
-                        to: "hayfasadkaoui989@gmail.com",
+                        to: "faresbenlakdher@gmail.com",
                         mimeType: 'text/html'
                     )
                     
