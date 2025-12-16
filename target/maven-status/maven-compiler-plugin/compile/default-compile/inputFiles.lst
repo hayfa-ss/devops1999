@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\control\UserRestControl.java
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\entities\Contrat.java
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\entities\Departement.java
@@ -9,3 +10,17 @@ C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spr
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\services\IUserService.java
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\services\UserServiceImpl.java
 C:\Users\hayfa\Downloads\timesheet-devops\devops1999\src\main\java\tn\esprit\spring\TimesheetDevopsApplication.java
+=======
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\repository\UserRepository.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\control\UserRestControl.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\Role.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\Departement.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\services\IUserService.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\TimesheetDevopsApplication.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\control\HomeController.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\Contrat.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\Employe.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\services\UserServiceImpl.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\User.java
+C:\Users\hayfa\Downloads\timesheet-devops\src\main\java\tn\esprit\spring\entities\Entreprise.java
+>>>>>>> master

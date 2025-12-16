@@ -1,0 +1,26 @@
+#!/bin/sh
+# POSIX pre-commit hook to detect common secret patterns in staged files
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+found=0
+
+for f in $staged_files; do
+    [ -f "$f" ] || continue
+    # Skip versioned hooks themselves
+    case "$f" in
+        .githooks/*) continue ;;
+        .githooks) continue ;;
+    esac
+    # Check for typical secret patterns
+    if grep -En "password\s*=|api[_-]?key|token|secret" "$f" >/dev/null 2>&1; then
+        echo "ERROR: potential secret found in $f"
+        grep -En "password\s*=|api[_-]?key|token|secret" "$f" || true
+        found=1
+    fi
+done
+
+if [ "$found" -eq 1 ]; then
+    echo "Pre-commit failed: secrets detected. Remove or mask secrets, then re-stage."
+    exit 1
+fi
+exit 0
